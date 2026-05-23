@@ -62,6 +62,7 @@ export function Post({ post, currentUserId, onUpdate, onSave, onDelete }: PostPr
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState<Record<string, string>>({});
   const [showLikeAnimation, setShowLikeAnimation] = useState(false);
+  const [commentBlocked, setCommentBlocked] = useState(false);
 
   const visibilityIcons = {
     public: <Globe className="h-4 w-4" />,
@@ -222,23 +223,17 @@ export function Post({ post, currentUserId, onUpdate, onSave, onDelete }: PostPr
 
       if (!res.ok) {
         if (data.blocked) {
-          toast.error(data.error, {
-            duration: 6000,
+          // Set blocked state for visual feedback
+          setCommentBlocked(true);
+          setComment("");
+          setTimeout(() => setCommentBlocked(false), 2000);
+          
+          // Show single clear message
+          const categories = data.toxic_categories?.length > 0 ? ` (${data.toxic_categories.join(', ')})` : '';
+          toast.error(`${data.error || 'Your comment contains inappropriate content'}${categories}. Please review our community guidelines.`, {
+            duration: 5000,
             icon: <AlertTriangle className="text-red-500" />,
           });
-
-          if (data.toxic_categories?.length > 0) {
-            toast.error(`Detected: ${data.toxic_categories.join(', ')}`, {
-              duration: 5000,
-            });
-          }
-
-          if (data.toxicity_score) {
-            toast(`Toxicity Score: ${(data.toxicity_score * 100).toFixed(1)}%`, {
-              icon: "📊",
-              duration: 4000,
-            });
-          }
         } else {
           toast.error(data.error || "Failed to add comment");
         }
@@ -261,6 +256,29 @@ export function Post({ post, currentUserId, onUpdate, onSave, onDelete }: PostPr
       toast.error("Failed to add comment");
     } finally {
       setIsSubmittingComment(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (!confirm("Are you sure you want to delete this comment?")) return;
+
+    try {
+      const res = await fetch(`/api/posts/${post.id}/comments`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ commentId }),
+      });
+
+      if (res.ok) {
+        setComments((prev) => prev.filter((c) => c.id !== commentId));
+        setCommentsCount((prev) => Math.max(0, prev - 1));
+        toast.success("Comment deleted successfully");
+      } else {
+        toast.error("Failed to delete comment");
+      }
+    } catch (error) {
+      console.error("Delete error:", error);
+      toast.error("Failed to delete comment");
     }
   };
 
@@ -327,32 +345,32 @@ export function Post({ post, currentUserId, onUpdate, onSave, onDelete }: PostPr
       className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden mb-4 transition-all duration-200 hover:shadow-lg"
     >
       {/* Post Header */}
-      <div className="p-3 md:p-4 flex items-center justify-between">
-        <div className="flex items-center space-x-2 md:space-x-3 min-w-0">
+      <div className="px-2 sm:px-3 md:px-4 py-3 md:py-4 flex items-center justify-between gap-2">
+        <div className="flex items-center space-x-2 md:space-x-3 min-w-0 flex-1">
           <Link href={`/profile/${post.username}`}>
-            <Avatar src={post.avatar_url} alt={post.username} size="md" />
+            <Avatar src={post.avatar_url} alt={post.username} size="sm" className="flex-shrink-0" />
           </Link>
           <div className="min-w-0 flex-1">
-            <div className="flex items-center space-x-1 md:space-x-2 flex-wrap">
+            <div className="flex items-center space-x-1 gap-1 flex-wrap">
               <Link
                 href={`/profile/${post.username}`}
-                className="font-semibold hover:underline text-sm md:text-base truncate"
+                className="font-semibold hover:underline text-xs sm:text-sm md:text-base truncate"
               >
                 {post.full_name || post.username}
               </Link>
               {post.is_verified && (
-                <Star className="h-3 w-3 md:h-4 md:w-4 fill-yellow-400 text-yellow-400 flex-shrink-0" />
+                <Star className="h-2.5 w-2.5 md:h-4 md:w-4 fill-yellow-400 text-yellow-400 flex-shrink-0" />
               )}
-              <span className="text-xs md:text-sm text-gray-500 whitespace-nowrap">
+              <span className="text-xs text-gray-500 whitespace-nowrap hidden sm:inline">
                 {formatDistanceToNow(new Date(post.created_at), {
                   addSuffix: true,
                 })}
               </span>
-              <span className="text-gray-400 flex-shrink-0">
+              <span className="text-gray-400 flex-shrink-0 text-xs md:text-sm">
                 {visibilityIcons[post.visibility]}
               </span>
             </div>
-            <p className="text-xs md:text-sm text-gray-500 truncate">@{post.username}</p>
+            <p className="text-xs text-gray-500 truncate">@{post.username}</p>
           </div>
         </div>
 
@@ -406,8 +424,8 @@ export function Post({ post, currentUserId, onUpdate, onSave, onDelete }: PostPr
       </div>
 
       {/* Post Content */}
-      <div className="px-3 md:px-4 pb-2">
-        <p className="whitespace-pre-wrap text-sm md:text-base break-words">{post.content}</p>
+      <div className="px-2 sm:px-3 md:px-4 pb-2">
+        <p className="whitespace-pre-wrap text-xs sm:text-sm md:text-base break-words leading-relaxed">{post.content}</p>
         {post.tags && post.tags.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-2">
             {post.tags.map((tag: string) => (
@@ -426,19 +444,21 @@ export function Post({ post, currentUserId, onUpdate, onSave, onDelete }: PostPr
       {/* Post Media */}
       {post.media_urls && post.media_urls.length > 0 && (
         <div
-          className={`grid ${
+          className={`grid gap-0.5 md:gap-1 w-full ${
             post.media_urls.length === 1
               ? "grid-cols-1"
               : post.media_urls.length === 2
                 ? "grid-cols-2"
                 : "grid-cols-3"
-          } gap-1`}
+          }`}
         >
           {post.media_urls.map((url: string, index: number) => (
             <div
               key={index}
-              className={`relative ${
-                post.media_urls.length === 1 ? "h-48 md:h-96" : "h-24 md:h-48"
+              className={`relative w-full bg-gray-900 ${
+                post.media_urls.length === 1 
+                  ? "h-40 sm:h-56 md:h-96" 
+                  : "h-32 sm:h-40 md:h-48"
               }`}
             >
               {post.media_types?.[index] === "video" ? (
@@ -453,7 +473,7 @@ export function Post({ post, currentUserId, onUpdate, onSave, onDelete }: PostPr
                   src={url}
                   alt={`Post media ${index + 1}`}
                   fill
-                  className="object-cover cursor-pointer hover:opacity-95 transition"
+                  className="object-cover cursor-pointer hover:opacity-90 transition w-full h-full"
                   onClick={() => window.open(url, "_blank")}
                 />
               )}
@@ -515,7 +535,9 @@ export function Post({ post, currentUserId, onUpdate, onSave, onDelete }: PostPr
                     placeholder="Write a comment..."
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
-                    className="min-h-[40px] max-h-[80px] resize-none pr-12 text-sm md:text-base"
+                    className={`min-h-[40px] max-h-[80px] resize-none pr-12 text-sm md:text-base transition-all ${
+                      commentBlocked ? 'border-red-500 bg-red-50 dark:bg-red-950' : ''
+                    }`}
                     rows={1}
                   />
                   <Button
@@ -532,6 +554,14 @@ export function Post({ post, currentUserId, onUpdate, onSave, onDelete }: PostPr
                   </Button>
                 </div>
               </form>
+              
+              {/* Comment Blocked Indicator */}
+              {commentBlocked && (
+                <div className="mt-2 p-2 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-2 animate-slideInUp text-xs">
+                  <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                  <p className="text-red-600 dark:text-red-400">Your comment was blocked for inappropriate content and has been cleared.</p>
+                </div>
+              )}
             </div>
 
             {/* Comments List */}
@@ -570,6 +600,17 @@ export function Post({ post, currentUserId, onUpdate, onSave, onDelete }: PostPr
                           >
                             Reply
                           </button>
+                          {commentItem.user_id === currentUserId && (
+                            <>
+                              <span>•</span>
+                              <button
+                                onClick={() => handleDeleteComment(commentItem.id)}
+                                className="hover:text-red-600 text-gray-500"
+                              >
+                                Delete
+                              </button>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
