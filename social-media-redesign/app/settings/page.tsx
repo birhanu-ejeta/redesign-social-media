@@ -18,6 +18,7 @@ import Image from 'next/image';
 import { toast, Toaster } from 'react-hot-toast';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
+import { MobileMenu } from '@/components/MobileMenu';
 
 // Types
 type TabType = 'account' | 'security' | 'privacy' | 'notifications' | 'messaging' | 'restrictions' | 'appearance' | 'general' | 'subscription' | 'activity' | 'support';
@@ -478,9 +479,10 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950">
+      <MobileMenu />
       <Toaster position="top-right" />
       
-      <div className="container px-4 py-8 mx-auto max-w-7xl">
+      <div className="container px-4 py-8 mx-auto max-w-7xl pt-[76px] lg:pt-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -496,7 +498,7 @@ export default function SettingsPage() {
         </motion.div>
         
         {/* Tab Navigation */}
-        <div className="sticky top-0 z-10 flex flex-wrap gap-2 py-4 mb-8 -mt-4 bg-gray-50/80 dark:bg-gray-900/80 backdrop-blur-sm">
+        <div className="sticky top-[60px] lg:top-0 z-10 flex gap-2 py-4 mb-8 -mt-4 bg-gray-50/80 dark:bg-gray-900/80 backdrop-blur-sm overflow-x-auto scrollbar-hide">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -507,7 +509,7 @@ export default function SettingsPage() {
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setActiveTab(tab.id)}
                 className={`
-                  flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all duration-200
+                  flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all duration-200 whitespace-nowrap shrink-0
                   ${isActive 
                     ? 'bg-white dark:bg-gray-800 shadow-md text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700' 
                     : 'text-gray-600 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white'
@@ -515,7 +517,7 @@ export default function SettingsPage() {
                 `}
               >
                 <Icon className={`w-4 h-4 ${isActive ? tab.color : ''}`} />
-                <span className="hidden sm:inline">{tab.label}</span>
+                <span className="text-sm">{tab.label}</span>
               </motion.button>
             );
           })}
@@ -873,7 +875,7 @@ export default function SettingsPage() {
                       <Ban className="w-5 h-5 text-orange-500" />
                       Blocked Users
                     </CardTitle>
-                    <CardDescription>Users you've blocked cannot interact with you</CardDescription>
+                    <CardDescription>Users you&apos;ve blocked cannot interact with you</CardDescription>
                   </CardHeader>
                   <CardContent>
                     {!settings?.blockedUsers.length ? (

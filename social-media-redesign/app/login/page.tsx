@@ -80,7 +80,7 @@ export default function LoginPage() {
         <Sparkles className="w-12 h-12 animate-pulse-slow" />
       </div>
 
-      <div className="max-w-6xl w-full flex flex-col md:flex-row gap-12 lg:gap-32 relative z-10 px-6">
+      <div className="max-w-6xl w-full flex flex-col md:flex-row gap-8 md:gap-12 lg:gap-32 relative z-10 px-4 sm:px-6">
         {/* Left Side: Brand */}
         <motion.div
           initial={{ opacity: 0, x: -40 }}
@@ -91,8 +91,8 @@ export default function LoginPage() {
           <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-tr from-[#c471ed] to-[#f64f59] shadow-2xl mb-8">
             <span className="text-4xl font-bold text-white">S</span>
           </div>
-          <h1 className="text-6xl lg:text-7xl font-extrabold text-black mb-4 tracking-tight">SocialFlow</h1>
-          <p className="text-2xl lg:text-3xl text-black/70 font-medium">Join the community</p>
+          <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold text-black mb-4 tracking-tight">SocialFlow</h1>
+          <p className="text-xl sm:text-2xl lg:text-3xl text-black/70 font-medium">Join the community</p>
         </motion.div>
 
         {/* Right Side: Login Card */}
@@ -112,7 +112,7 @@ export default function LoginPage() {
             </div>
 
             <div className="relative z-10">
-              <h2 className="text-white text-lg font-bold mb-8">Log into SocialFlow</h2>
+              <h2 className="text-gray-900 text-lg font-bold mb-8">Log into SocialFlow</h2>
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                 <div>

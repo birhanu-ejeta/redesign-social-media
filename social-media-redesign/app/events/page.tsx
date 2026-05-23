@@ -20,6 +20,7 @@ import { EventCard } from './components/EventCard';
 import { EventCalendar } from './components/EventCalendar';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
+import { MobileMenu } from '@/components/MobileMenu';
 
 export default function EventsPage() {
   const { data: session } = useSession();
@@ -72,7 +73,8 @@ export default function EventsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-      <div className="container mx-auto px-4 py-8">
+      <MobileMenu />
+      <div className="container mx-auto px-4 py-8 pt-[76px] lg:pt-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}

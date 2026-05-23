@@ -153,7 +153,7 @@ export default function SignupPage() {
         <Sparkles className="w-12 h-12 animate-pulse-slow" />
       </div>
 
-      <div className="max-w-6xl w-full flex flex-col md:flex-row gap-8 lg:gap-20 relative z-10 px-6 py-6 mt-8">
+      <div className="max-w-6xl w-full flex flex-col md:flex-row gap-8 lg:gap-20 relative z-10 px-4 sm:px-6 py-6 mt-8">
         {/* Left Side: Brand */}
         <motion.div
           initial={{ opacity: 0, x: -40 }}
@@ -164,7 +164,7 @@ export default function SignupPage() {
           <div className="inline-flex items-center justify-center w-20 h-20 lg:w-24 lg:h-24 rounded-full bg-gradient-to-tr from-[#c471ed] to-[#f64f59] shadow-xl mb-6">
             <span className="text-4xl font-bold text-white">S</span>
           </div>
-          <h1 className="text-5xl lg:text-7xl font-extrabold text-black mb-2 tracking-tight">SocialFlow</h1>
+          <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold text-black mb-2 tracking-tight">SocialFlow</h1>
           <p className="text-xl lg:text-3xl text-black/70 font-medium">Join the community</p>
         </motion.div>
 
