@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
@@ -27,7 +26,7 @@ export default function UserDashboard() {
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-24 h-24 bg-pink-500/30 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '0.5s' }} />
           </div>
-          
+
           {/* Spinner */}
           <div className="relative">
             <div className="w-20 h-20 border-4 border-purple-200 dark:border-purple-900 border-t-purple-600 dark:border-t-purple-400 rounded-full animate-spin" />
@@ -88,8 +87,9 @@ export default function UserDashboard() {
 
       {/* Main Container */}
       <div className="relative pt-[60px] lg:pt-0 z-10">
+        
         {/* ==================== LEFT SIDEBAR - FIXED ==================== */}
-        <aside className="hidden lg:block fixed left-0 top-0 w-[280px] xl:w-[320px] h-screen pt-8 pb-8 pl-6 z-20">
+        <aside className="hidden lg:block fixed left-0 top-0 w-[280px] xl:w-[320px] h-screen pt-0 pb-8 pl-6 z-20">
           <div className="h-full overflow-y-auto pr-4 custom-scrollbar">
             <div className="animate-slideInLeft">
               <Sidebar user={session.user} />
@@ -98,7 +98,7 @@ export default function UserDashboard() {
         </aside>
 
         {/* ==================== RIGHT SIDEBAR - FIXED ==================== */}
-        <aside className="hidden lg:block fixed right-0 top-0 w-[280px] xl:w-[320px] h-screen pt-8 pb-8 pr-6 z-20">
+        <aside className="hidden lg:block fixed right-0 top-0 w-[280px] xl:w-[320px] h-screen pt-0 pb-8 pr-6 z-20">
           <div className="h-full overflow-y-auto pl-4 custom-scrollbar">
             <div className="animate-slideInRight">
               <TrendingSidebar />
@@ -108,55 +108,44 @@ export default function UserDashboard() {
 
         {/* ==================== MAIN CONTENT - FLEXIBLE/SCROLLABLE ==================== */}
         <main className="lg:ml-[280px] xl:ml-[320px] lg:mr-[280px] xl:mr-[320px]">
-          <div className="max-w-[800px] mx-auto px-3 sm:px-4 py-4 lg:py-8">
-            {/* Welcome Banner - Desktop Only */}
-            <div className="hidden lg:block mb-6 animate-slideInDown">
-              <div className="relative overflow-hidden bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 dark:from-purple-700 dark:via-pink-700 dark:to-purple-700 rounded-2xl p-6 shadow-2xl">
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
-                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
-                <div className="relative flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl shadow-lg">
-                      <Sparkles className="h-8 w-8 text-white" />
+          
+          {/* Welcome Banner - Desktop Only (Fixed to top) */}
+          <div className="hidden lg:block fixed top-0 left-[280px] xl:left-[320px] right-[280px] xl:right-[320px] z-30 pt-8 pb-4 bg-gradient-to-br from-gray-50/90 via-purple-50/90 to-pink-50/90 dark:from-gray-950/90 dark:via-purple-950/90 dark:to-gray-900/90 backdrop-blur-md">
+            <div className="max-w-[800px] mx-auto px-3 sm:px-4">
+              <div className="animate-slideInDown">
+                <div className="relative overflow-hidden bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 dark:from-purple-700 dark:via-pink-700 dark:to-purple-700 rounded-2xl p-6 shadow-2xl">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
+                  <div className="relative flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl shadow-lg">
+                        <Sparkles className="h-8 w-8 text-white" />
+                      </div>
+                      <div>
+                        <h1 className="text-2xl font-bold text-white mb-1">
+                          Welcome back, {session.user.name || session.user.username}! 👋
+                        </h1>
+                        <p className="text-purple-100 text-sm">
+                          Discover what's trending and connect with your community
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h1 className="text-2xl font-bold text-white mb-1">
-                        Welcome back, {session.user.name || session.user.username}! 👋
-                      </h1>
-                      <p className="text-purple-100 text-sm">
-                        Discover what's trending and connect with your community
-                      </p>
-                    </div>
+                    <button
+                      onClick={() => setFeedKey(prev => prev + 1)}
+                      className="group flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-xl transition-all duration-300 hover:scale-105 shadow-lg"
+                    >
+                      <RefreshCw className="h-4 w-4 text-white group-hover:rotate-180 transition-transform duration-500" />
+                      <span className="text-white font-medium text-sm">Refresh Feed</span>
+                    </button>
                   </div>
-                  <button
-                    onClick={() => setFeedKey(prev => prev + 1)}
-                    className="group flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-xl transition-all duration-300 hover:scale-105 shadow-lg"
-                  >
-                    <RefreshCw className="h-4 w-4 text-white group-hover:rotate-180 transition-transform duration-500" />
-                    <span className="text-white font-medium text-sm">Refresh Feed</span>
-                  </button>
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Mobile Welcome Card */}
-            <div className="lg:hidden mb-4 animate-slideInDown">
-              <div className="relative overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-700 dark:to-pink-700 rounded-2xl p-5 shadow-xl">
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
-                <div className="relative">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Sparkles className="h-6 w-6 text-white" />
-                    <h2 className="text-lg font-bold text-white">
-                      Hey, {session.user.name?.split(' ')[0] || session.user.username}! 👋
-                    </h2>
-                  </div>
-                  <p className="text-purple-100 text-sm">
-                    What's on your mind today?
-                  </p>
-                </div>
-              </div>
-            </div>
-
+          {/* Scrolling Main Content (with top padding on desktop to clear the fixed banner) */}
+          <div className="max-w-[800px] mx-auto px-3 sm:px-4 pb-4 lg:pb-8 pt-4 lg:pt-[160px] relative">
+            
             {/* Stories */}
             <div className="mb-4 lg:mb-6 animate-slideInUp" style={{ animationDelay: '0.1s' }}>
               <Stories />
@@ -171,6 +160,7 @@ export default function UserDashboard() {
             <div className="animate-slideInUp" style={{ animationDelay: '0.3s' }}>
               <Feed key={feedKey} userId={session.user.id} />
             </div>
+
           </div>
         </main>
       </div>
