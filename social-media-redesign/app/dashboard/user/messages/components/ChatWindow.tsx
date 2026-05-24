@@ -15,6 +15,8 @@ import {
   Image as ImageIcon,
   Paperclip,
   AlertTriangle,
+  MessageCircle,
+  Trash2,
 } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
@@ -31,10 +33,11 @@ import { toast } from 'react-hot-toast';
 interface Message {
   id: string;
   sender_id: string;
-  content: string;
+  content?: string;
   media_url?: string;
   created_at: string;
   is_read: boolean;
+  is_deleted?: boolean;
 }
 
 interface ChatWindowProps {
@@ -52,11 +55,13 @@ export function ChatWindow({ userId }: ChatWindowProps) {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [messageBlocked, setMessageBlocked] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (!chatId) return;
+    if (!chatId || !pusherClient) return;
 
     fetchMessages();
     markMessagesAsRead();
@@ -76,6 +81,14 @@ export function ChatWindow({ userId }: ChatWindowProps) {
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === data.messageId ? { ...msg, is_read: true } : msg,
+        ),
+      );
+    });
+
+    channel.bind("message-deleted", (data: any) => {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === data.messageId ? { ...msg, is_deleted: true, content: "" } : msg,
         ),
       );
     });
@@ -107,6 +120,35 @@ export function ChatWindow({ userId }: ChatWindowProps) {
       await fetch(`/api/messages/${chatId}/read`, { method: "POST" });
     } catch (error) {
       console.error("Failed to mark messages as read:", error);
+    }
+  };
+
+  const handleDeleteMessage = async (messageId: string) => {
+    if (!messageId) return;
+    
+    setDeleting(messageId);
+    try {
+      const response = await fetch(`/api/messages/${messageId}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        // Update local state
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === messageId ? { ...msg, is_deleted: true, content: "" } : msg,
+          ),
+        );
+        toast.success("Message deleted", { duration: 2000 });
+        setDeleteConfirm(null);
+      } else {
+        toast.error("Failed to delete message");
+      }
+    } catch (error) {
+      console.error("Error deleting message:", error);
+      toast.error("Error deleting message");
+    } finally {
+      setDeleting(null);
     }
   };
 
@@ -150,21 +192,24 @@ export function ChatWindow({ userId }: ChatWindowProps) {
         }
       } else if (data.blocked) {
         // Blocked: clear input immediately and show visual feedback
-        console.log("[v0] Message blocked, clearing input");
-        setNewMessage(""); // Force clear
-        setTimeout(() => setNewMessage(""), 0); // Ensure it clears even if state is batched
+        // Clear both text and file inputs before showing any UI feedback
+        setNewMessage("");
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
         }
-        setMessageBlocked(true);
-        setTimeout(() => setMessageBlocked(false), 2000);
         
-        // Show single clear message
+        // Set blocked state for visual feedback
+        setMessageBlocked(true);
+        
+        // Show error toast
         const categories = data.toxic_categories?.length > 0 ? ` (${data.toxic_categories.join(', ')})` : '';
         toast.error(`${data.error || 'Your message contains inappropriate content'}${categories}`, {
           duration: 5000,
           icon: '🚫',
         });
+        
+        // Clear blocked state after delay
+        setTimeout(() => setMessageBlocked(false), 2000);
       }
     } catch (error) {
       console.error("Failed to send message:", error);
@@ -277,36 +322,88 @@ export function ChatWindow({ userId }: ChatWindowProps) {
               )}
 
               <div
-                className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
+                className={`flex items-end gap-2 ${isOwn ? "justify-end" : "justify-start"}`}
               >
-                <div
-                  className={`max-w-[70%] ${
-                    isOwn
-                      ? "bg-primary text-white rounded-tl-lg rounded-tr-lg rounded-bl-lg"
-                      : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-tl-lg rounded-tr-lg rounded-br-lg"
-                  } p-3`}
-                >
-                  {message.media_url && (
-                    <div className="mb-2">
-                      <Image
-                        src={message.media_url}
-                        alt="Shared image"
-                        width={200}
-                        height={200}
-                        className="rounded-lg"
-                      />
-                    </div>
-                  )}
-                  {message.content && <p>{message.content}</p>}
+                {message.is_deleted ? (
                   <div
-                    className={`text-xs mt-1 ${isOwn ? "text-white/70" : "text-gray-500"}`}
+                    className={`max-w-[70%] ${
+                      isOwn
+                        ? "bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 rounded-tl-lg rounded-tr-lg rounded-bl-lg"
+                        : "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded-tl-lg rounded-tr-lg rounded-br-lg"
+                    } p-3 italic`}
                   >
-                    {format(new Date(message.created_at), "h:mm a")}
-                    {isOwn && message.is_read && (
-                      <span className="ml-2">✓✓</span>
-                    )}
+                    <p className="text-sm">[This message was deleted]</p>
+                    <div
+                      className={`text-xs mt-1 ${isOwn ? "text-gray-600 dark:text-gray-500" : "text-gray-500"}`}
+                    >
+                      {format(new Date(message.created_at), "h:mm a")}
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <>
+                    <div
+                      className={`max-w-[70%] group relative ${
+                        isOwn
+                          ? "bg-primary text-white rounded-tl-lg rounded-tr-lg rounded-bl-lg"
+                          : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-tl-lg rounded-tr-lg rounded-br-lg"
+                      } p-3`}
+                    >
+                      {message.media_url && (
+                        <div className="mb-2">
+                          <Image
+                            src={message.media_url}
+                            alt="Shared image"
+                            width={200}
+                            height={200}
+                            className="rounded-lg"
+                          />
+                        </div>
+                      )}
+                      {message.content && <p>{message.content}</p>}
+                      <div
+                        className={`text-xs mt-1 ${isOwn ? "text-white/70" : "text-gray-500"}`}
+                      >
+                        {format(new Date(message.created_at), "h:mm a")}
+                        {isOwn && message.is_read && (
+                          <span className="ml-2">✓✓</span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Delete Button */}
+                    {isOwn && (
+                      <div className="flex flex-col gap-1">
+                        {deleteConfirm === message.id ? (
+                          <>
+                            <button
+                              onClick={() => handleDeleteMessage(message.id)}
+                              disabled={deleting === message.id}
+                              className="p-1 hover:bg-red-100 dark:hover:bg-red-900 rounded text-red-600 dark:text-red-400 transition-colors text-xs font-medium"
+                              title="Confirm delete"
+                            >
+                              Yes
+                            </button>
+                            <button
+                              onClick={() => setDeleteConfirm(null)}
+                              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-600 dark:text-gray-400 transition-colors text-xs font-medium"
+                              title="Cancel"
+                            >
+                              No
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            onClick={() => setDeleteConfirm(message.id)}
+                            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                            title="Delete message"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             </div>
           );
