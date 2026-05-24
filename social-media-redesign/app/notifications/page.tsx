@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { Notification } from '@/types';
+import { MobileMenu } from '@/components/MobileMenu';
 
 export default function NotificationsPage() {
   const queryClient = useQueryClient();
@@ -134,7 +135,8 @@ export default function NotificationsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="container mx-auto px-4 py-6 max-w-2xl">
+      <MobileMenu />
+      <div className="container mx-auto px-4 py-6 max-w-2xl pt-[76px] lg:pt-6">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">Notifications</h1>
           <Button 

@@ -31,7 +31,7 @@ export function Footer() {
               SocialFlow
             </h3>
             <p className="text-gray-400 mb-4">
-              Connect, share, and grow with the world's most innovative social platform.
+              Connect, share, and grow with the world&apos;s most innovative social platform.
             </p>
             <div className="flex space-x-4">
               <a href="#" className="text-gray-400 hover:text-white transition-colors">

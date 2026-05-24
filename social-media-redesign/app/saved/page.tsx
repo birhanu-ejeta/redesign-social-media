@@ -5,6 +5,7 @@ import { Bookmark, Grid3x3, List, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { Button } from '@/components/ui/Button';
 import { Post } from '@/app/dashboard/user/components/Post';
+import { MobileMenu } from '@/components/MobileMenu';
 
 export default function SavedPage() {
   const [view, setView] = useState<'grid' | 'list'>('grid');
@@ -42,7 +43,8 @@ export default function SavedPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="container mx-auto px-4 py-6">
+      <MobileMenu />
+      <div className="container mx-auto px-4 py-6 pt-[76px] lg:pt-6">
         <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
           <h1 className="text-2xl font-bold flex items-center">
             <Bookmark className="h-6 w-6 mr-2" />
