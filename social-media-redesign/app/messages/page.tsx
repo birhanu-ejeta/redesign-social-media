@@ -361,8 +361,7 @@ function MessagesPageContent() {
       toast.error('Failed to load messages');
     }
   };
-
-  const sendMessage = async () => {
+const sendMessage = async () => {
   const text = newMessage.trim();
   if (!text || !conversationId) return;
 
@@ -381,10 +380,13 @@ function MessagesPageContent() {
     const data = await response.json();
 
     if (!response.ok) {
-      // 🚫 HATE SPEECH DETECTED - Show warning, DON'T clear input
+      // 🚫 HATE SPEECH DETECTED - Show warning and CLEAR input
       toast.error(data.error || '⚠️ Your message contains inappropriate content');
       console.warn('Message blocked:', data.code, data.details);
-      return; // Keep the text in input so user can edit
+      
+      // ✅ Add this line to clear the input field when a message is blocked
+      setNewMessage(''); 
+      return; 
     }
 
     // ✅ MESSAGE SENT SUCCESSFULLY - Clear input
@@ -397,6 +399,41 @@ function MessagesPageContent() {
     setIsSending(false);
   }
 };
+//   const sendMessage = async () => {
+//   const text = newMessage.trim();
+//   if (!text || !conversationId) return;
+
+//   setIsSending(true);
+//   try {
+//     // ⭐️ MAKE REQUEST TO YOUR API WITH HATE SPEECH CHECK
+//     const response = await fetch(`/api/messages/conversations/${conversationId}/messages`, {
+//       method: 'POST',
+//       headers: { 'Content-Type': 'application/json' },
+//       body: JSON.stringify({
+//         content: text,
+//         messageType: 'text',
+//       }),
+//     });
+
+//     const data = await response.json();
+
+//     if (!response.ok) {
+//       // 🚫 HATE SPEECH DETECTED - Show warning, DON'T clear input
+//       toast.error(data.error || '⚠️ Your message contains inappropriate content');
+//       console.warn('Message blocked:', data.code, data.details);
+//       return; // Keep the text in input so user can edit
+//     }
+
+//     // ✅ MESSAGE SENT SUCCESSFULLY - Clear input
+//     setNewMessage('');
+    
+//   } catch (error) {
+//     console.error('Failed to send message:', error);
+//     toast.error('Failed to send message. Please try again.');
+//   } finally {
+//     setIsSending(false);
+//   }
+// };
 
   const deleteMessage = async (messageId: string) => {
     try {
