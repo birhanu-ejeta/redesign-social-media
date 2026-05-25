@@ -1,8 +1,8 @@
 // lib/moderation.ts
 import { checkHateSpeech } from './hateSpeech';
 
-const AUTO_BLOCK_THRESHOLD = 0.90;
-const AUTO_FLAG_THRESHOLD = 0.70;
+const AUTO_BLOCK_THRESHOLD = 0.55;
+const AUTO_FLAG_THRESHOLD = 0.40;
 
 export interface ModerationResult {
   allowed: boolean;
